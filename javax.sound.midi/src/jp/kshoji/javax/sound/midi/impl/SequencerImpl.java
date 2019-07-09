@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import jp.kshoji.javax.sound.midi.ControllerEventListener;
 import jp.kshoji.javax.sound.midi.InvalidMidiDataException;
@@ -36,7 +37,7 @@ import jp.kshoji.javax.sound.midi.Transmitter;
 import jp.kshoji.javax.sound.midi.io.StandardMidiFileReader;
 
 /**
- * {@link jp.kshoji.javax.sound.midi.Sequencer} implementation
+ * {@link Sequencer} implementation
  *
  * @author K.Shoji
  */
@@ -197,6 +198,9 @@ public class SequencerImpl implements Sequencer {
          * Stop playing
          */
         private void stopPlaying() {
+            // experiment 20190702 fujii
+                sendAllNotesOff();
+
             if (isRunning == false) {
                 // already stopping
                 synchronized (this) {
@@ -214,6 +218,7 @@ public class SequencerImpl implements Sequencer {
                 notifyAll();
             }
             interrupt();
+
         }
 
         /**
@@ -341,7 +346,7 @@ public class SequencerImpl implements Sequencer {
                                     switch (shortMessage.getCommand()) {
                                         case ShortMessage.NOTE_ON:
                                         case ShortMessage.NOTE_OFF:
-                                            break;
+//                                            break;
                                         default:
                                             synchronized (receivers) {
                                                 for (final Receiver receiver : receivers) {
@@ -410,6 +415,7 @@ public class SequencerImpl implements Sequencer {
                 // loop end
                 isRunning = false;
                 runningStoppedTime = System.currentTimeMillis();
+
             }
         }
 
@@ -432,6 +438,39 @@ public class SequencerImpl implements Sequencer {
                 }
             }
             return false;
+        }
+
+        // experiment 20190702 fujii
+        private void sendAllSoundOff() {
+            ShortMessage allSoundOffMessage = new ShortMessage();
+            synchronized (receivers) {
+                try {
+                    allSoundOffMessage.setMessage(ShortMessage.CONTROL_CHANGE, 0, 0x78, 0);
+                    for (final Receiver receiver : receivers) {
+                        receiver.send(allSoundOffMessage, 0);
+                    }
+                } catch (InvalidMidiDataException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        // experiment 20190702 fujii
+        private void sendAllNotesOff() {
+            synchronized (receivers) {
+                    ShortMessage allNotesOffMessage = new ShortMessage();
+
+                    IntStream.range(0, 16).forEach(i -> {
+                        try {
+                        allNotesOffMessage.setMessage(ShortMessage.CONTROL_CHANGE, i, 0x7B, 0);
+                        } catch (InvalidMidiDataException e) {
+                            e.printStackTrace();
+                        }
+                        for (final Receiver receiver : receivers) {
+                            receiver.send(allNotesOffMessage, 0);
+                        }
+                    });
+            }
         }
 
         /**
@@ -792,6 +831,15 @@ public class SequencerImpl implements Sequencer {
             sequencerThread.needRefreshPlayingTrack = true;
         }
     }
+
+    //TODO: experiment 20190613 fujii
+    public void refreshPlayingTrack() {
+        sequencerThread.refreshPlayingTrack();
+    }
+    public Track getPlayingTrack() {
+        return sequencerThread.playingTrack;
+    }
+
 
     @NonNull
     @Override
