@@ -22,6 +22,7 @@ import jp.kshoji.javax.sound.midi.ControllerEventListener;
 import jp.kshoji.javax.sound.midi.InvalidMidiDataException;
 import jp.kshoji.javax.sound.midi.MetaEventListener;
 import jp.kshoji.javax.sound.midi.MetaMessage;
+import jp.kshoji.javax.sound.midi.MidiDeviceTransmitter;
 import jp.kshoji.javax.sound.midi.MidiEvent;
 import jp.kshoji.javax.sound.midi.MidiMessage;
 import jp.kshoji.javax.sound.midi.MidiSystem.MidiSystemUtils;
@@ -640,10 +641,22 @@ public class SequencerImpl implements Sequencer {
     public Transmitter getTransmitter() throws MidiUnavailableException {
         synchronized (transmitters) {
             if (transmitters.isEmpty()) {
-                throw new MidiUnavailableException("Transmitter not found");
-            } else {
-                return transmitters.get(0);
+                transmitters.add(new Transmitter() {
+                    Receiver receiver;
+                    @Override
+                    public void setReceiver(@Nullable Receiver receiver){this.receiver = receiver;}
+
+                    @Override
+                    @Nullable
+                    public Receiver getReceiver(){return receiver;}
+
+                    @Override
+                    public void close() {receiver.close();}
+
+                });
+//                throw new MidiUnavailableException("Transmitter not found");
             }
+            return transmitters.get(0);
         }
     }
 
