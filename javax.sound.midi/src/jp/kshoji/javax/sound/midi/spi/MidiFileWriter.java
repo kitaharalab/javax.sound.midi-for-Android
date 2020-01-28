@@ -1,6 +1,6 @@
 package jp.kshoji.javax.sound.midi.spi;
 
-import androidx.annotation.NonNull;
+import android.support.annotation.NonNull;
 
 import java.io.File;
 import java.io.IOException;

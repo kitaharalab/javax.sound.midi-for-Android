@@ -1,6 +1,6 @@
 package jp.kshoji.javax.sound.midi.io;
 
-import androidx.annotation.NonNull;
+import android.support.annotation.NonNull;
 
 import java.io.DataOutputStream;
 import java.io.File;
