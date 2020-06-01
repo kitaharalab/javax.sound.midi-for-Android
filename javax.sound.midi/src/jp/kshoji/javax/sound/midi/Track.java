@@ -134,7 +134,7 @@ public class Track {
 				// remove all of END_OF_TRACK
 				final Collection<MidiEvent> filtered = new ArrayList<MidiEvent>();
 				for (final MidiEvent event : track.events) {
-					if (event != null && !Arrays.equals(END_OF_TRACK, event.getMessage().getMessage())) {
+					if (event != null && event.getMessage() != null && !Arrays.equals(END_OF_TRACK, event.getMessage().getMessage())) {
 						filtered.add(event);
 					}
 				}
