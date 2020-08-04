@@ -347,7 +347,7 @@ public class SequencerImpl implements Sequencer {
                                     switch (shortMessage.getCommand()) {
                                         case ShortMessage.NOTE_ON:
                                         case ShortMessage.NOTE_OFF:
-//                                            break;
+                                            break;
                                         default:
                                             synchronized (receivers) {
                                                 for (final Receiver receiver : receivers) {
@@ -852,6 +852,7 @@ public class SequencerImpl implements Sequencer {
     public Track getPlayingTrack() {
         return sequencerThread.playingTrack;
     }
+    public Thread.State getState() { return sequencerThread.getState(); }
 
 
     @NonNull
